@@ -101,6 +101,9 @@
       document.getElementById('intro').classList.add('hidden');
       document.getElementById('game').classList.remove('hidden');
       gameInterval = setInterval(spawnHeart, 800);
+      const music = document.getElementById('bgMusic');
+      music.volume = 0.4; // soft romantic volume
+      music.play();
     }
 
     function spawnHeart() {
@@ -142,6 +145,7 @@
 </body>
 
 </html>
+
 
 
 
