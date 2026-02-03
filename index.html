@@ -53,7 +53,7 @@
       position: absolute;
       font-size: 2rem;
       cursor: pointer;
-      animation: float 10s linear forwards;
+      animation: float 6s linear forwards;
     }
     @keyframes float {
       from { bottom: -50px; opacity: 1; }
@@ -100,7 +100,7 @@
     function startGame() {
       document.getElementById('intro').classList.add('hidden');
       document.getElementById('game').classList.remove('hidden');
-      gameInterval = setInterval(spawnHeart, 700);
+      gameInterval = setInterval(spawnHeart, 800);
     }
 
     function spawnHeart() {
@@ -117,7 +117,7 @@
         if (score >= 5) endGame();
       };
 
-      setTimeout(() => heart.remove(), 10000);
+      setTimeout(() => heart.remove(), 6000);
     }
 
     function endGame() {
@@ -139,5 +139,6 @@
 </body>
 
 </html>
+
 
 
