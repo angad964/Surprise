@@ -4,16 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Will You Be My Valentine? ❤️</title>
+
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #ff758c, #ff7eb3);;
+      background: linear-gradient(135deg, #ff758c, #ff7eb3);
       color: white;
       text-align: center;
       overflow: hidden;
-      position: relative;
     }
+
     .screen {
       min-height: 100vh;
       display: flex;
@@ -22,14 +23,17 @@
       align-items: center;
       padding: 20px;
     }
+
     h1 {
       font-size: 2.8rem;
       margin-bottom: 10px;
     }
+
     p {
       font-size: 1.2rem;
       max-width: 500px;
     }
+
     button {
       margin: 10px;
       padding: 12px 28px;
@@ -41,15 +45,24 @@
       cursor: pointer;
       transition: transform 0.2s;
     }
+
     button:hover {
       transform: scale(1.05);
     }
+
+    #noBtn {
+      transition: left 0.25s ease, top 0.25s ease;
+    }
+
+    .hidden { display: none !important; }
+
     #gameArea {
       position: relative;
       width: 100%;
       height: 60vh;
       overflow: hidden;
     }
+
     .heart {
       position: absolute;
       font-size: 2.5rem;
@@ -57,13 +70,13 @@
       animation: float 6s linear forwards;
       user-select: none;
     }
-    @keyframes float {
-      from { bottom: -60px; opacity: 1; transform: scale(1); }
-      to   { bottom: 110%; opacity: 0; transform: scale(0.6) rotate(360deg); }
-    }
-    .hidden { display: none !important; }
 
-    /* ── Burst hearts on YES ── */
+    @keyframes float {
+      from { bottom: -60px; opacity: 1; }
+      to   { bottom: 110%; opacity: 0; transform: rotate(360deg); }
+    }
+
+    /* YES burst hearts */
     .burst-heart {
       position: absolute;
       width: 24px;
@@ -74,6 +87,7 @@
       pointer-events: none;
       border-radius: 4px;
     }
+
     .burst-heart::before,
     .burst-heart::after {
       content: "";
@@ -83,67 +97,66 @@
       background: inherit;
       border-radius: 50%;
     }
-    .burst-heart::before { top: -12px; left: 0; }
-    .burst-heart::after { left: 12px; top: 0; }
+
+    .burst-heart::before { top: -12px; }
+    .burst-heart::after { left: 12px; }
+
     @keyframes burst {
-      0%   { transform: translate(0, 0) rotate(-45deg) scale(0.4); opacity: 1; }
-      100% { transform: translate(var(--tx), var(--ty)) rotate(-45deg) scale(1.4); opacity: 0; }
+      0%   { transform: scale(0.4) rotate(-45deg); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(1.4) rotate(-45deg); opacity: 0; }
     }
 
-    /* ── Falling hearts background ── */
+    /* Falling hearts */
     #falling-container {
       position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: 5;
-      overflow: hidden;
     }
+
     .falling-heart {
       position: absolute;
       font-size: 2rem;
-      opacity: 0.8;
-      pointer-events: none;
       animation: fall linear forwards;
-      will-change: transform, opacity;
     }
+
     @keyframes fall {
-      0%   { transform: translateY(-15vh) translateX(0) rotate(0deg); opacity: 0.9; }
-      100% { transform: translateY(120vh) translateX(var(--sway)) rotate(720deg); opacity: 0; }
+      from { transform: translateY(-10vh); }
+      to { transform: translateY(120vh) rotate(720deg); }
     }
   </style>
 </head>
+
 <body>
 
-  <!-- Falling hearts container (always present, but hearts added later) -->
   <div id="falling-container"></div>
 
-  <!-- Screen 1 -->
+  <!-- Intro -->
   <div id="intro" class="screen">
     <h1>Hey ❤️</h1>
-    <p>I made a tiny game just for you. Win it, and I have a question to ask 👀</p>
+    <p>I made a tiny game just for you. Win it, and I have a question 👀</p>
     <button onclick="startGame()">Start the Game</button>
   </div>
 
-  <!-- Screen 2: Game -->
+  <!-- Game -->
   <div id="game" class="screen hidden">
     <h1>Catch the Hearts 💕</h1>
-    <p>Tap 5 hearts to unlock the question!</p>
-    <p><strong>Score: <span id="score">0</span>/5</strong></p>
+    <p>Score: <span id="score">0</span>/5</p>
     <div id="gameArea"></div>
   </div>
 
-  <!-- Screen 3: Question -->
+  <!-- Question -->
   <div id="question" class="screen hidden">
     <h1>So… 💖</h1>
     <p>Will you be my Valentine? 🌹</p>
-    <button onclick="yesAnswer()">YES 😍</button>
-    <button onclick="noAnswer()">NO 🙄</button>
+    <button onclick="yesAnswer(event)">YES 😍</button>
+    <button id="noBtn">NO 🙄</button>
   </div>
 
-  <!-- Screen 4: Result -->
+  <!-- Result -->
   <div id="result" class="screen hidden">
     <h1 id="resultText"></h1>
-    <p>You just made my day, Thank you soooo muchh babee!❤️</p>
+    <p>You just made my day ❤️</p>
   </div>
 
   <audio id="bgMusic" loop>
@@ -153,134 +166,90 @@
   <script>
     let score = 0;
     let gameInterval;
-    const TARGET_SCORE = 5; // changed to match the text (was 15)
+    const TARGET_SCORE = 5;
 
     function startGame() {
-      document.getElementById('intro').classList.add('hidden');
-      document.getElementById('game').classList.remove('hidden');
+      intro.classList.add('hidden');
+      game.classList.remove('hidden');
       gameInterval = setInterval(spawnHeart, 800);
-      const music = document.getElementById('bgMusic');
-      if (music) {
-        music.volume = 0.4;
-        music.play().catch(() => {}); // handle autoplay block
-      }
+      bgMusic.volume = 0.4;
+      bgMusic.play().catch(() => {});
     }
 
     function spawnHeart() {
       const heart = document.createElement('div');
-      heart.classList.add('heart');
+      heart.className = 'heart';
       heart.innerText = '❤️';
       heart.style.left = Math.random() * 90 + '%';
-      document.getElementById('gameArea').appendChild(heart);
+      gameArea.appendChild(heart);
 
       heart.onclick = () => {
         score++;
-        document.getElementById('score').innerText = score;
+        scoreEl.innerText = score;
         heart.remove();
         if (score >= TARGET_SCORE) endGame();
       };
 
-      setTimeout(() => {
-        if (heart.parentNode) heart.remove();
-      }, 6500);
+      setTimeout(() => heart.remove(), 6000);
     }
 
     function endGame() {
       clearInterval(gameInterval);
-      document.getElementById('game').classList.add('hidden');
-      document.getElementById('question').classList.remove('hidden');
+      game.classList.add('hidden');
+      question.classList.remove('hidden');
     }
 
-    // ── Heart burst on YES ──
-    function createHeartBurst(x, y) {
-      const count = 35;
-      for (let i = 0; i < count; i++) {
-        const heart = document.createElement('div');
-        heart.classList.add('burst-heart');
-
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 80 + Math.random() * 220;
-        const tx = Math.cos(angle) * dist;
-        const ty = Math.sin(angle) * dist - 80; // bias slightly upward
-
-        heart.style.setProperty('--tx', tx + 'px');
-        heart.style.setProperty('--ty', ty + 'px');
-
-        const size = 14 + Math.random() * 18;
-        heart.style.width = size + 'px';
-        heart.style.height = size + 'px';
-        heart.style.left = x + 'px';
-        heart.style.top = y + 'px';
-        heart.style.background = `hsl(${330 + Math.random()*30}, 95%, 60%)`;
-
-        const duration = 0.9 + Math.random() * 1.4;
-        heart.style.animation = `burst ${duration}s forwards`;
-        heart.style.animationDelay = (Math.random() * 0.4) + 's';
-
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 2200);
-      }
-    }
-
-    // ── Continuous falling hearts ──
-    function createFallingHeart() {
-      const heart = document.createElement('div');
-      heart.classList.add('falling-heart');
-      heart.innerText = ['❤️', '💖', '💕', '💗'][Math.floor(Math.random()*4)];
-
-      const left = Math.random() * 100;
-      const duration = 10 + Math.random() * 14; // 10–24 seconds
-      const delay = Math.random() * 4;
-      const sway = (40 + Math.random() * 80) * (Math.random() > 0.5 ? 1 : -1);
-
-      heart.style.left = left + 'vw';
-      heart.style.fontSize = (1.4 + Math.random() * 2.2) + 'rem';
-      heart.style.animationDuration = duration + 's';
-      heart.style.animationDelay = delay + 's';
-      heart.style.setProperty('--sway', sway + 'px');
-
-      document.getElementById('falling-container').appendChild(heart);
-
-      setTimeout(() => heart.remove(), (duration + delay + 1) * 1000);
+    function yesAnswer(e) {
+      question.classList.add('hidden');
+      result.classList.remove('hidden');
+      resultText.innerText = 'YAY!! 💘🥰';
+      startFallingHearts();
     }
 
     function startFallingHearts() {
-      // Spawn initial batch
-      for (let i = 0; i < 12; i++) {
-        setTimeout(createFallingHeart, i * 300);
-      }
-      // Then continuous
-      setInterval(createFallingHeart, 700);
+      setInterval(() => {
+        const h = document.createElement('div');
+        h.className = 'falling-heart';
+        h.innerText = '💖';
+        h.style.left = Math.random() * 100 + 'vw';
+        h.style.animationDuration = (8 + Math.random() * 6) + 's';
+        falling-container.appendChild(h);
+        setTimeout(() => h.remove(), 15000);
+      }, 600);
     }
 
-    function yesAnswer() {
-      // Get click position for burst (fallback to center)
-      const btn = event.currentTarget;
-      const rect = btn.getBoundingClientRect();
-      const x = rect.left + rect.width / 2 + window.scrollX;
-      const y = rect.top + rect.height / 2 + window.scrollY;
+    // NO button escape logic
+    const noBtn = document.getElementById('noBtn');
 
-      createHeartBurst(x, y);
+    function moveNoButton() {
+      const maxX = window.innerWidth - noBtn.offsetWidth;
+      const maxY = window.innerHeight - noBtn.offsetHeight;
 
-      document.getElementById('question').classList.add('hidden');
-      document.getElementById('result').classList.remove('hidden');
-      document.getElementById('resultText').innerText = 'YAY!! 💘🥰';
-
-      // Start romantic falling hearts
-      startFallingHearts();
-
-      // Optional: make background a bit more dreamy
-      document.body.style.background = 'linear-gradient(135deg, #ff9aa2, #ffb7c5, #ff9aa2)';
-      document.body.style.transition = 'background 4s ease';
+      noBtn.style.position = 'fixed';
+      noBtn.style.left = Math.random() * maxX + 'px';
+      noBtn.style.top = Math.random() * maxY + 'px';
     }
 
-    function noAnswer() {
-      alert('Wrong answer 😌 Try again');
-      // Optional: tiny sad hearts or shake effect later if you want
-    }
+    noBtn.addEventListener('mouseenter', moveNoButton);
+    noBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      moveNoButton();
+    });
+
+    const scoreEl = document.getElementById('score');
+    const gameArea = document.getElementById('gameArea');
+    const intro = document.getElementById('intro');
+    const game = document.getElementById('game');
+    const question = document.getElementById('question');
+    const result = document.getElementById('result');
+    const resultText = document.getElementById('resultText');
+    const bgMusic = document.getElementById('bgMusic');
   </script>
+
 </body>
 </html>
+
+
 
 
 
